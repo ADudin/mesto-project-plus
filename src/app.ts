@@ -1,6 +1,7 @@
 import path from 'path';
-import express from 'express';
+import express, { NextFunction, Request, Response } from 'express';
 import mongoose from 'mongoose';
+import STATUS_CODES from './utils/status-codes';
 import userRouter from './routes/user';
 import cardsRouter from './routes/cards';
 
@@ -24,6 +25,21 @@ app.use('/', userRouter);
 app.use('/', cardsRouter);
 
 app.use(express.static(path.join(__dirname, 'public')));
+
+app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+
+  const { statusCode = STATUS_CODES.INTERNAL_SERVER_ERROR, message } = err;
+
+  res
+    .status(statusCode)
+    .send({
+
+      message: statusCode === STATUS_CODES.INTERNAL_SERVER_ERROR
+        ? 'На сервере произошла ошибка'
+        : message
+    });
+});
+
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
   console.log(BASE_PATH);
