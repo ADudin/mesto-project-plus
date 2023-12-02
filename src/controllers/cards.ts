@@ -14,7 +14,7 @@ export const createCard = (req: any, res: Response) => {
 
   return Card.create({ name, link, owner: ownerId })
     .then(card => res.status(200).send({ data: card }))
-    .catch((err) => res.status(500).send({ message: err }));
+    .catch(() => res.status(500).send({ message: 'Поизошла ошибка' }));
 };
 
 export const deleteCard = (req: Request, res: Response) => {
@@ -22,4 +22,26 @@ export const deleteCard = (req: Request, res: Response) => {
   return Card.findByIdAndRemove(req.params.cardId)
     .then(card => res.status(200).send({ data: card }))
     .catch(() => res.status(500).send({ message: 'Поизошла ошибка' }));
+};
+
+export const likeCard = (req: any, res: Response) => {
+
+  return Card.findByIdAndUpdate(
+    req.params.cardId,
+    { $addToSet: { likes: req.user._id } },
+    { new: true }
+  )
+  .then(card => res.status(200).send({ data: card }))
+  .catch(() => res.status(500).send({ message: 'Поизошла ошибка' }));
+};
+
+export const dislikeCard = ( req: any, res: Response) => {
+
+  return Card.findByIdAndUpdate(
+    req.params.cardId,
+    { $pull: { likes: req.user._id } },
+    { new: true }
+  )
+  .then(card => res.status(200).send({ data: card }))
+  .catch(() => res.status(500).send({ message: 'Поизошла ошибка' }));
 };
