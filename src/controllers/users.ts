@@ -17,7 +17,7 @@ export const getUser = (req: Request, res: Response) => {
 
 export const createUser = (req: Request, res: Response) => {
   const { name, about, avatar } = req.body;
-  console.log(name);
+
   return User.create({ name, about, avatar })
     .then(user => res.status(200).send({ data: user }))
     .catch(() => res.status(500).send({ message: 'Произошла ошибка' }));
