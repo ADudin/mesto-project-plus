@@ -1,9 +1,8 @@
-import path from 'path';
 import express, { NextFunction, Request, Response } from 'express';
 import mongoose from 'mongoose';
 import STATUS_CODES from './utils/status-codes';
-import userRouter from './routes/user';
-import cardsRouter from './routes/cards';
+import ERROR_NAMES from './utils/error-names';
+import router from './routes/index';
 
 const { PORT = 3000, BASE_PATH = 'none' } = process.env;
 const app = express();
@@ -21,23 +20,29 @@ app.use((req: any, res, next) => {
   next();
 });
 
-app.use('/', userRouter);
-app.use('/', cardsRouter);
-
-app.use(express.static(path.join(__dirname, 'public')));
+app.use('/', router);
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+  if (err.name === ERROR_NAMES.CAST_ERROR || err.name === ERROR_NAMES.DOCUMENT_NOT_FOUND_ERROR) {
+    res.status(STATUS_CODES.BAD_REQUEST).send({ message: 'Переданный _id не найден' });
+  } else if (err.name === ERROR_NAMES.VALIDATION_ERROR) {
+    res.status(STATUS_CODES.BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
+  } else {
+    const { statusCode = STATUS_CODES.INTERNAL_SERVER_ERROR, message } = err;
 
-  const { statusCode = STATUS_CODES.INTERNAL_SERVER_ERROR, message } = err;
+    res
+      .status(statusCode)
+      .send({
 
-  res
-    .status(statusCode)
-    .send({
+        message: statusCode === STATUS_CODES.INTERNAL_SERVER_ERROR
+          ? 'На сервере произошла ошибка'
+          : message
+      });
+  }
+});
 
-      message: statusCode === STATUS_CODES.INTERNAL_SERVER_ERROR
-        ? 'На сервере произошла ошибка'
-        : message
-    });
+app.use((req, res, next) => {
+  res.status(STATUS_CODES.NOT_FOUND).send({ message: 'Указанного пути не существует' });
 });
 
 app.listen(PORT, () => {
