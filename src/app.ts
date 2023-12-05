@@ -23,21 +23,18 @@ app.use((req: any, res, next) => {
 app.use('/', router);
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-  if (err.name === ERROR_NAMES.CAST_ERROR || err.name === ERROR_NAMES.DOCUMENT_NOT_FOUND_ERROR) {
-    res.status(STATUS_CODES.BAD_REQUEST).send({ message: 'Переданный _id не найден' });
-  } else if (err.name === ERROR_NAMES.VALIDATION_ERROR) {
-    res.status(STATUS_CODES.BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
-  } else {
-    const { statusCode = STATUS_CODES.INTERNAL_SERVER_ERROR, message } = err;
-
-    res
-      .status(statusCode)
-      .send({
-
-        message: statusCode === STATUS_CODES.INTERNAL_SERVER_ERROR
-          ? 'На сервере произошла ошибка'
-          : message
-      });
+  switch (err.name) {
+    case ERROR_NAMES.CAST_ERROR:
+      res.status(STATUS_CODES.BAD_REQUEST).send({ message: 'Переданный _id не найден' });
+      break;
+    case ERROR_NAMES.DOCUMENT_NOT_FOUND_ERROR:
+      res.status(STATUS_CODES.BAD_REQUEST).send({ message: 'Указанный объект не найден' });
+      break;
+    case ERROR_NAMES.VALIDATION_ERROR:
+      res.status(STATUS_CODES.BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
+      break;
+    default:
+      res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).send({ message: 'На сервере произошла ошибка' });
   }
 });
 

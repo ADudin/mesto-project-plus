@@ -13,7 +13,7 @@ export const getUser = (req: Request, res: Response, next: NextFunction) => {
 
   return User.findById(req.params.userId)
     .orFail()
-    .then((user) => { res.status(STATUS_CODES.OK).send(user) })
+    .then(user => res.status(STATUS_CODES.OK).send(user))
     .catch(next);
 };
 
@@ -36,7 +36,7 @@ export const updateUser = (req: any, res: Response, next: NextFunction) => {
       runValidators: true
     })
     .orFail()
-    .then((user) => { res.status(STATUS_CODES.OK).send(user) })
+    .then(user => res.status(STATUS_CODES.OK).send(user))
     .catch(next);
 };
 
@@ -51,6 +51,6 @@ export const updateAvatar = (req: any, res: Response, next: NextFunction) => {
       runValidators: true
     })
     .orFail()
-    .then((user) => { res.status(STATUS_CODES.OK).send(user) })
+    .then(user => res.status(STATUS_CODES.OK).send(user))
     .catch(next);
 };

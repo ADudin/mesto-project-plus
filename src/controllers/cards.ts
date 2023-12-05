@@ -22,7 +22,7 @@ export const deleteCard = (req: Request, res: Response, next: NextFunction ) => 
 
   return Card.findByIdAndRemove(req.params.cardId)
     .orFail()
-    .then((card) => { res.status(STATUS_CODES.OK).send(card) })
+    .then(card => res.status(STATUS_CODES.OK).send(card))
     .catch(next);
 };
 
@@ -35,7 +35,7 @@ export const likeCard = (req: any, res: Response, next: NextFunction) => {
     { new: true }
   )
   .orFail()
-  .then((card) => { res.status(STATUS_CODES.CREATED).send(card) })
+  .then(card => res.status(STATUS_CODES.CREATED).send(card))
   .catch(next);
 };
 
@@ -48,6 +48,6 @@ export const dislikeCard = ( req: any, res: Response, next: NextFunction) => {
     { new: true }
   )
   .orFail()
-  .then((card) => { res.status(STATUS_CODES.OK).send(card) })
+  .then(card => res.status(STATUS_CODES.OK).send(card))
   .catch(next);
 };
