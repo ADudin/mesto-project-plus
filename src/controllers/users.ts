@@ -18,9 +18,9 @@ export const getUser = (req: Request, res: Response, next: NextFunction) => {
 };
 
 export const createUser = (req: Request, res: Response, next: NextFunction) => {
-  const { name, about, avatar } = req.body;
+  const { name, about, avatar, email, password } = req.body;
 
-  return User.create({ name, about, avatar })
+  return User.create({ name, about, avatar, email, password })
     .then(user => res.status(STATUS_CODES.CREATED).send(user))
     .catch(next);
 };
