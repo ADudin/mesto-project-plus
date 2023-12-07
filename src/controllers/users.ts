@@ -1,4 +1,5 @@
 import { NextFunction, Request, Response } from 'express';
+import jwt from 'jsonwebtoken';
 import User from '../models/user';
 import STATUS_CODES from '../utils/status-codes';
 
@@ -53,4 +54,23 @@ export const updateAvatar = (req: any, res: Response, next: NextFunction) => {
     .orFail()
     .then(user => res.status(STATUS_CODES.OK).send(user))
     .catch(next);
+};
+
+export const login = (req: Request, res: Response) => {
+  const { email, password } = req.body;
+
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+
+      const token = jwt.sign(
+        { _id: user._id },
+        'some-secret-key',
+        { expiresIn: '7d' }
+      );
+
+      res.send({ token });
+    })
+    .catch((err) => {
+      res.status(STATUS_CODES.UNAUTHORIZED).send({ message: err.message });
+    });
 };

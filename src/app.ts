@@ -3,6 +3,7 @@ import mongoose from 'mongoose';
 import STATUS_CODES from './utils/status-codes';
 import ERROR_NAMES from './utils/error-names';
 import router from './routes/index';
+import { login, createUser } from './controllers/users';
 
 const { PORT = 3000, BASE_PATH = 'none' } = process.env;
 const app = express();
@@ -20,6 +21,8 @@ app.use((req: any, res, next) => {
   next();
 });
 
+app.post('/signin', login);
+app.post('/signin', createUser);
 app.use('/', router);
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
