@@ -3,7 +3,7 @@ import validator from 'validator';
 
 const bcrypt = require('bcrypt');
 
-interface IUser {
+export interface IUser {
   name: string;
   about: string;
   avatar: string;
@@ -55,6 +55,7 @@ userSchema.static('findUserByCredentials', function findUserByCredentials(email:
     }
 
     return bcrypt.compare(password, user.password).then((matched: boolean) => {
+
       if (!matched) {
         return Promise.reject(new Error('неправильная почта или пароль'));
       }

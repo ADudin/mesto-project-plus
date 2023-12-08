@@ -4,6 +4,7 @@ import STATUS_CODES from './utils/status-codes';
 import ERROR_NAMES from './utils/error-names';
 import router from './routes/index';
 import { login, createUser } from './controllers/users';
+import auth from './middlewares/auth';
 
 const { PORT = 3000, BASE_PATH = 'none' } = process.env;
 const app = express();
@@ -13,16 +14,11 @@ app.use(express.json());
 
 mongoose.connect('mongodb://localhost:27017/mestdb');
 
-app.use((req: any, res, next) => {
-  req.user = {
-    _id: '6568d3a536fbf604553c811e'
-  };
-
-  next();
-});
-
 app.post('/signin', login);
-app.post('/signin', createUser);
+app.post('/signup', createUser);
+
+app.use(auth);
+
 app.use('/', router);
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
