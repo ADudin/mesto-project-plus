@@ -25,7 +25,6 @@ export const deleteCard = (req: any, res: Response, next: NextFunction ) => {
     .then((card) => {
 
       if (card.owner.toString() !== req.user._id) {
-
         return res.status(STATUS_CODES.UNAUTHORIZED).send({ message: 'Необходима авторизация' });
       }
 

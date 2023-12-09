@@ -43,26 +43,29 @@ const userSchema = new mongoose.Schema<IUser, UserModel>({
   },
   password: {
     type: String,
-    required: true
+    required: true,
+    select: false
   }
 });
 
 userSchema.static('findUserByCredentials', function findUserByCredentials(email: string, password: string) {
 
-  return this.findOne({ email }).then((user) => {
-    if(!user) {
-      return Promise.reject(new Error('неправильная почта или пароль'));
-    }
-
-    return bcrypt.compare(password, user.password).then((matched: boolean) => {
-
-      if (!matched) {
+  return this.findOne({ email })
+    .select('+password')
+    .then((user) => {
+      if(!user) {
         return Promise.reject(new Error('неправильная почта или пароль'));
       }
 
-      return user;
+      return bcrypt.compare(password, user.password).then((matched: boolean) => {
+
+        if (!matched) {
+          return Promise.reject(new Error('неправильная почта или пароль'));
+        }
+
+        return user;
+      });
     });
-  });
 });
 
 export default mongoose.model<IUser, UserModel>('user', userSchema);
