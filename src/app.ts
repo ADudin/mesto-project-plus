@@ -1,6 +1,6 @@
 import express, { NextFunction, Request, Response } from 'express';
 import mongoose from 'mongoose';
-import { errors } from 'celebrate';
+import { isCelebrateError } from 'celebrate';
 import STATUS_CODES from './utils/status-codes';
 import ERROR_NAMES from './utils/error-names';
 import router from './routes/index';
@@ -11,6 +11,7 @@ import { requestLogger, errorLogger } from './middlewares/logger';
 
 const { PORT = 3000, BASE_PATH = 'none' } = process.env;
 const app = express();
+const DB_CONFLICT_ERR_CODE = 11000;
 
 app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
@@ -27,9 +28,17 @@ app.use(auth);
 app.use('/', router);
 
 app.use(errorLogger);
-app.use(errors());
 
 app.use((err: any, req: Request, res: Response, next: NextFunction) => {
+
+  if (isCelebrateError(err)) {
+    return res.status(STATUS_CODES.BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
+  }
+
+  if (err.code === DB_CONFLICT_ERR_CODE) {
+    return res.status(STATUS_CODES.CONFLICT).send({ message: 'Пользователь с указанной электронной почтой уже существует' });
+  }
+
   switch (err.name) {
     case ERROR_NAMES.CAST_ERROR:
       res.status(STATUS_CODES.BAD_REQUEST).send({ message: 'Переданный _id не найден' });

@@ -33,7 +33,7 @@ export const createUser = (req: Request, res: Response, next: NextFunction) => {
 
   return bcrypt.hash(password, 10)
     .then((hash: string) => User.create({ name, about, avatar, email, password: hash }))
-    .then((user: IUser) => res.status(STATUS_CODES.CREATED).send(user))
+    .then((user: IUser) => res.status(STATUS_CODES.CREATED).send({ name: user.name, about: user.about, avatar: user.avatar }))
     .catch(next);
 };
 
