@@ -18,11 +18,19 @@ export const createCard = (req: any, res: Response, next: NextFunction) => {
     .catch(next);
 };
 
-export const deleteCard = (req: Request, res: Response, next: NextFunction ) => {
+export const deleteCard = (req: any, res: Response, next: NextFunction ) => {
 
-  return Card.findByIdAndRemove(req.params.cardId)
+  return Card.findById(req.params.cardId)
     .orFail()
-    .then((card) => { res.status(STATUS_CODES.OK).send(card) })
+    .then((card) => {
+
+      if (card.owner.toString() !== req.user._id) {
+        return res.status(STATUS_CODES.UNAUTHORIZED).send({ message: 'Необходима авторизация' });
+      }
+
+      return card.deleteOne();
+    })
+    .then(() => res.status(STATUS_CODES.OK).send({ message: 'Карточка удалена' }))
     .catch(next);
 };
 
@@ -35,7 +43,7 @@ export const likeCard = (req: any, res: Response, next: NextFunction) => {
     { new: true }
   )
   .orFail()
-  .then((card) => { res.status(STATUS_CODES.CREATED).send(card) })
+  .then(card => res.status(STATUS_CODES.CREATED).send(card))
   .catch(next);
 };
 
@@ -48,6 +56,6 @@ export const dislikeCard = ( req: any, res: Response, next: NextFunction) => {
     { new: true }
   )
   .orFail()
-  .then((card) => { res.status(STATUS_CODES.OK).send(card) })
+  .then(card => res.status(STATUS_CODES.OK).send(card))
   .catch(next);
 };
