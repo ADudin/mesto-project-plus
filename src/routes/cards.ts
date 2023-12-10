@@ -5,13 +5,13 @@ import {
   createCard,
   deleteCard,
   likeCard,
-  dislikeCard
+  dislikeCard,
 } from '../controllers/cards';
 
 import {
   createCardValidation,
-  getCardValidation
-} from '../validation/card-validation'
+  getCardValidation,
+} from '../middlewares/validation/card-validation';
 
 const router = Router();
 

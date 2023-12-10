@@ -1,5 +1,5 @@
 import { Joi, celebrate } from 'celebrate';
-import { regExp } from '../utils/regular-expressions';
+import { regExp } from '../../utils/regular-expressions';
 
 export const createCardValidation = celebrate({
   body: Joi.object().keys({
@@ -9,7 +9,7 @@ export const createCardValidation = celebrate({
 });
 
 export const getCardValidation = celebrate({
-  body: Joi.object().keys({
+  params: Joi.object().keys({
     cardId: Joi.string().length(24).hex().required()
   })
 });
