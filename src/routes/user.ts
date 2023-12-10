@@ -5,14 +5,14 @@ import {
   getUsers,
   getUserById,
   updateUser,
-  updateAvatar
+  updateAvatar,
 } from '../controllers/users';
 
 import {
   getUserByIdValidation,
   updateUserValidation,
-  updateAvatarValidation
-} from '../validation/user-validation'
+  updateAvatarValidation,
+} from '../middlewares/validation/user-validation';
 
 const router = Router();
 

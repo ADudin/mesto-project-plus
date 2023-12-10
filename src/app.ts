@@ -1,62 +1,46 @@
 import express, { NextFunction, Request, Response } from 'express';
 import mongoose from 'mongoose';
-import { isCelebrateError } from 'celebrate';
+import helmet from 'helmet';
+import { errors } from 'celebrate';
+import { rateLimit } from 'express-rate-limit';
+
 import STATUS_CODES from './utils/status-codes';
-import ERROR_NAMES from './utils/error-names';
+import RequestError from './errors/request-error';
 import router from './routes/index';
-import { login, createUser } from './controllers/users';
-import auth from './middlewares/auth';
-import { loginUserValidation, createUserValidation } from './validation/user-validation';
+import errorHandler from './middlewares/errors';
 import { requestLogger, errorLogger } from './middlewares/logger';
 
 const { PORT = 3000, BASE_PATH = 'none' } = process.env;
 const app = express();
-const DB_CONFLICT_ERR_CODE = 11000;
 
-app.use(express.urlencoded({ extended: false }));
+const limiter = rateLimit({
+	windowMs: 15 * 60 * 1000, // 15 minutes
+	limit: 100, // Limit each IP to 100 requests per `window` (here, per 15 minutes).
+	standardHeaders: 'draft-7', // draft-6: `RateLimit-*` headers; draft-7: combined `RateLimit` header
+	legacyHeaders: false, // Disable the `X-RateLimit-*` headers.
+	// store: ... , // Use an external store for consistency across multiple server instances.
+})
+
+app.use(express.urlencoded({ extended: true }));
 app.use(express.json());
 
 mongoose.connect('mongodb://localhost:27017/mestdb');
 
+app.use(helmet());
+app.use(limiter);
+
 app.use(requestLogger);
-
-app.post('/signin', loginUserValidation, login);
-app.post('/signup', createUserValidation, createUser);
-
-app.use(auth);
 
 app.use('/', router);
 
+app.use((req: Request, res: Response, next: NextFunction) => {
+  next(new RequestError(STATUS_CODES.NOT_FOUND, 'Указанного пути не существует'));
+});
+
 app.use(errorLogger);
 
-app.use((err: any, req: Request, res: Response, next: NextFunction) => {
-
-  if (isCelebrateError(err)) {
-    return res.status(STATUS_CODES.BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
-  }
-
-  if (err.code === DB_CONFLICT_ERR_CODE) {
-    return res.status(STATUS_CODES.CONFLICT).send({ message: 'Пользователь с указанной электронной почтой уже существует' });
-  }
-
-  switch (err.name) {
-    case ERROR_NAMES.CAST_ERROR:
-      res.status(STATUS_CODES.BAD_REQUEST).send({ message: 'Переданный _id не найден' });
-      break;
-    case ERROR_NAMES.DOCUMENT_NOT_FOUND_ERROR:
-      res.status(STATUS_CODES.BAD_REQUEST).send({ message: 'Указанный объект не найден' });
-      break;
-    case ERROR_NAMES.VALIDATION_ERROR:
-      res.status(STATUS_CODES.BAD_REQUEST).send({ message: 'Переданы некорректные данные' });
-      break;
-    default:
-      res.status(STATUS_CODES.INTERNAL_SERVER_ERROR).send({ message: 'На сервере произошла ошибка' });
-  }
-});
-
-app.use((req, res, next) => {
-  res.status(STATUS_CODES.NOT_FOUND).send({ message: 'Указанного пути не существует' });
-});
+app.use(errors());
+app.use(errorHandler);
 
 app.listen(PORT, () => {
   console.log(`App listening on port ${PORT}`);
